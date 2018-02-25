@@ -5,6 +5,8 @@ import java.io.Closeable
 
 interface Connection<C: Connection<C>>: Closeable {
 
+  suspend fun prepare(sqlStatement: String): PreparedStatement<C>
+
   suspend fun rows(sqlStatement: String): ResultSet
   suspend fun rows(sqlStatement: String, params: Iterable<Any?>): ResultSet
   suspend fun rows(preparedStatement: PreparedStatement<C>): ResultSet
