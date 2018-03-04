@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "info.jdavid.sql"
-version = "1.0.0.8"
+version = "1.0.0.9"
 
 repositories {
   jcenter()
