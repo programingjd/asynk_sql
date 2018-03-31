@@ -9,7 +9,7 @@ interface Connection<C: Connection<C>>: ACloseable {
   suspend fun commitTransaction()
   suspend fun rollbackTransaction()
 
-  suspend fun <R> withTransaction(block: () -> R): R {
+  suspend fun <R> withTransaction(block: suspend () -> R): R {
     var throwable: Throwable? = null
     try {
       startTransaction()
