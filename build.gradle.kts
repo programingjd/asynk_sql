@@ -13,13 +13,13 @@ buildscript {
 }
 
 plugins {
-  kotlin("jvm") version "1.2.30"
+  kotlin("jvm") version "1.2.31"
   `maven-publish`
   id("com.jfrog.bintray") version "1.8.0"
 }
 
 group = "info.jdavid.sql"
-version = "1.0.0.9"
+version = "1.0.1.0"
 
 repositories {
   jcenter()
@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
   compile(kotlin("stdlib-jdk8"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.3")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.5")
   testImplementation("junit:junit:4.12")
 }
 

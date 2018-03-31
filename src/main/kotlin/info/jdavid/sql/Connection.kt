@@ -5,6 +5,32 @@ import java.io.Closeable
 
 interface Connection<C: Connection<C>>: ACloseable {
 
+  suspend fun startTransaction()
+  suspend fun commitTransaction()
+  suspend fun rollbackTransaction()
+
+  suspend fun <R> withTransaction(block: () -> R): R {
+    var throwable: Throwable? = null
+    try {
+      startTransaction()
+      try {
+        return block()
+      }
+      catch (e: Throwable) {
+        throwable = e
+        throw e
+      }
+    }
+    finally {
+      if (throwable == null) {
+        commitTransaction()
+      }
+      else {
+        rollbackTransaction()
+      }
+    }
+  }
+
   suspend fun prepare(sqlStatement: String): PreparedStatement<C>
 
   suspend fun rows(sqlStatement: String): ResultSet
