@@ -18,8 +18,8 @@ plugins {
   id("com.jfrog.bintray") version "1.8.0"
 }
 
-group = "info.jdavid.sql"
-version = "1.0.2.1"
+group = "info.jdavid.asynk"
+version = "0.0.0.1"
 
 repositories {
   jcenter()
@@ -88,13 +88,13 @@ bintray {
   pkg(delegateClosureOf<BintrayExtension.PackageConfig>{
     repo = "maven"
     name = "${project.group}"
-    websiteUrl = "https://github.com/programingjd/sql"
-    issueTrackerUrl = "https://github.com/programingjd/sql/issues"
-    vcsUrl = "https://github.com/programingjd/sql.git"
-    githubRepo = "programingjd/sql"
+    websiteUrl = "https://github.com/programingjd/asynk_sql"
+    issueTrackerUrl = "https://github.com/programingjd/asynk_sql/issues"
+    vcsUrl = "https://github.com/programingjd/asynk_sql.git"
+    githubRepo = "programingjd/asynk_sql"
     githubReleaseNotesFile = "README.md"
     setLicenses("Apache-2.0")
-    setLabels("sql", "java", "kotlin", "async", "coroutines", "suspend")
+    setLabels("asynk", "sql", "java", "kotlin", "async", "coroutines", "suspend")
     publicDownloadNumbers = true
     version(delegateClosureOf<BintrayExtension.VersionConfig> {
       name = "${project.version}"

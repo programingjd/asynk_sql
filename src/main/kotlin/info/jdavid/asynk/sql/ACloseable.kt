@@ -1,4 +1,4 @@
-package info.jdavid.sql
+package info.jdavid.asynk.sql
 
 interface ACloseable {
   suspend fun aClose()

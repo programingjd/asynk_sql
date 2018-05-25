@@ -1,4 +1,4 @@
-package info.jdavid.sql
+package info.jdavid.asynk.sql
 
 import java.net.InetAddress
 import java.net.SocketAddress

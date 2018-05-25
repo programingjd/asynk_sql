@@ -1,4 +1,4 @@
-package info.jdavid.sql
+package info.jdavid.asynk.sql
 
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Test
