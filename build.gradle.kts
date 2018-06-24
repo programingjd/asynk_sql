@@ -28,7 +28,8 @@ repositories {
 dependencies {
   compile(kotlin("stdlib-jdk8"))
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.3")
-  testImplementation("junit:junit:4.12")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
+  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
 
 kotlin {
@@ -48,6 +49,13 @@ val javadocJar by tasks.creating(Jar::class) {
 tasks.withType(KotlinJvmCompile::class.java).all {
   kotlinOptions {
     jvmTarget = "1.8"
+  }
+}
+
+tasks.withType<Test> {
+  useJUnitPlatform()
+  testLogging {
+    events("passed", "skipped", "failed")
   }
 }
 

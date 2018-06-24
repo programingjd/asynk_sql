@@ -1,8 +1,8 @@
 package info.jdavid.asynk.sql
 
 import kotlinx.coroutines.experimental.runBlocking
-import org.junit.Test
-import org.junit.Assert.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 
 class ACloseableTests {
 
@@ -17,25 +17,25 @@ class ACloseableTests {
 
   @Test
   fun testNoExceptionThrown() = runBlocking {
-    TestCloseable().let {
-      it.use {
-        it.notThrowing()
+    TestCloseable().apply {
+      use {
+        notThrowing()
       }
-      assertTrue(it.closed)
+      assertTrue(closed)
     }
   }
 
   @Test
   fun testExceptionThrown() = runBlocking {
-    TestCloseable().let {
+    TestCloseable().apply {
       try {
-        it.use {
-          it.throwing()
+        use {
+          throwing()
         }
-        fail()
+        fail("Exception should have been thrown.")
       }
       catch (e: RuntimeException) {
-        assertTrue(it.closed)
+        assertTrue(closed)
       }
     }
   }
