@@ -13,13 +13,13 @@ buildscript {
 }
 
 plugins {
-  kotlin("jvm") version "1.2.50"
+  kotlin("jvm") version "1.2.60"
   `maven-publish`
   id("com.jfrog.bintray") version "1.8.1"
 }
 
 group = "info.jdavid.asynk"
-version = "0.0.0.3"
+version = "0.0.0.4"
 
 repositories {
   jcenter()
@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
   compile(kotlin("stdlib-jdk8"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.3")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.24.0")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
   testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
