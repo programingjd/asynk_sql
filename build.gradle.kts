@@ -13,13 +13,13 @@ buildscript {
 }
 
 plugins {
-  kotlin("jvm") version "1.2.60"
+  kotlin("jvm") version "1.2.61"
   `maven-publish`
   id("com.jfrog.bintray") version "1.8.1"
 }
 
 group = "info.jdavid.asynk"
-version = "0.0.0.4"
+version = "0.0.0.6"
 
 repositories {
   jcenter()
