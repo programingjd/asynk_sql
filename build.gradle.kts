@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "info.jdavid.asynk"
-version = "0.0.0.6"
+version = "0.0.0.7"
 
 repositories {
   jcenter()
@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
   compile(kotlin("stdlib-jdk8"))
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.24.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:0.25.0")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
   testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
