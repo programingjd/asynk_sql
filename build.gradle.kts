@@ -40,6 +40,10 @@ kotlin {
 
 val dokkaJavadoc by tasks.creating(DokkaTask::class) {
   outputFormat = "javadoc"
+  includeNonPublic = false
+  skipEmptyPackages = true
+  impliedPlatforms = mutableListOf("JVM")
+  jdkVersion = 8
   outputDirectory = "${buildDir}/javadoc"
 }
 
