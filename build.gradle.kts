@@ -1,4 +1,5 @@
 import com.jfrog.bintray.gradle.BintrayExtension
+import org.jetbrains.dokka.gradle.DokkaTask
 import java.io.FileInputStream
 import java.io.FileWriter
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -15,11 +16,12 @@ buildscript {
 plugins {
   kotlin("jvm") version "1.2.61"
   `maven-publish`
+  id("org.jetbrains.dokka") version "0.9.17"
   id("com.jfrog.bintray") version "1.8.1"
 }
 
 group = "info.jdavid.asynk"
-version = "0.0.0.7"
+version = "0.0.0.8"
 
 repositories {
   jcenter()
@@ -36,14 +38,20 @@ kotlin {
   experimental.coroutines = Coroutines.ENABLE
 }
 
+val dokkaJavadoc by tasks.creating(DokkaTask::class) {
+  outputFormat = "javadoc"
+  outputDirectory = "${buildDir}/javadoc"
+}
+
 val sourcesJar by tasks.creating(Jar::class) {
   classifier = "sources"
-  from(java.sourceSets["main"].allSource)
+  from(sourceSets["main"].allSource)
 }
 
 val javadocJar by tasks.creating(Jar::class) {
   classifier = "javadoc"
-  from(java.docsDir)
+  from("${buildDir}/javadoc")
+  dependsOn("javadoc")
 }
 
 tasks.withType(KotlinJvmCompile::class.java).all {
@@ -72,8 +80,8 @@ publishing {
       url = uri("${buildDir}/repo")
     }
   }
-  (publications) {
-    "mavenJava"(MavenPublication::class) {
+  publications {
+    register("mavenJava", MavenPublication::class) {
       from(components["java"])
       artifact(sourcesJar)
       artifact(javadocJar)
@@ -136,5 +144,8 @@ tasks {
   }
   "bintrayUpload" {
     dependsOn("check")
+  }
+  "javadoc" {
+    dependsOn("dokkaJavadoc")
   }
 }
