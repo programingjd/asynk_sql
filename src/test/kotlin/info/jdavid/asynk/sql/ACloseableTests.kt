@@ -16,26 +16,30 @@ class ACloseableTests {
   }
 
   @Test
-  fun testNoExceptionThrown() = runBlocking {
-    TestCloseable().apply {
-      use {
-        notThrowing()
+  fun testNoExceptionThrown() {
+    runBlocking {
+      TestCloseable().apply {
+        use {
+          notThrowing()
+        }
+        assertTrue(closed)
       }
-      assertTrue(closed)
     }
   }
 
   @Test
-  fun testExceptionThrown() = runBlocking {
-    TestCloseable().apply {
-      try {
-        use {
-          throwing()
+  fun testExceptionThrown() {
+    runBlocking {
+      TestCloseable().apply {
+        try {
+          use {
+            throwing()
+          }
+          fail("Exception should have been thrown.")
         }
-        fail("Exception should have been thrown.")
-      }
-      catch (e: RuntimeException) {
-        assertTrue(closed)
+        catch (e: RuntimeException) {
+          assertTrue(closed)
+        }
       }
     }
   }
