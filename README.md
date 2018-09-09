@@ -1,3 +1,3 @@
-![jcenter](https://img.shields.io/badge/_jcenter_-0.0.0.11-6688ff.png?style=flat)
+![jcenter](https://img.shields.io/badge/_jcenter_-0.0.0.12-6688ff.png?style=flat)
 # Asynk SQL
 Interfaces for SQL async client with suspend functions for kotlin coroutines.                                                                                             
