@@ -62,6 +62,24 @@ class TransactionTests {
     override suspend fun rows(preparedStatement: Connection.PreparedStatement<TestConn>) = TODO()
     override suspend fun rows(preparedStatement: Connection.PreparedStatement<TestConn>,
                               params: Iterable<Any?>) = TODO()
+    override suspend fun <T> values(sqlStatement: String, columnNameOrAlias: String) = TODO()
+    override suspend fun <T> values(sqlStatement: String, params: Iterable<Any?>,
+                                    columnNameOrAlias: String) = TODO()
+    override suspend fun <T> values(preparedStatement: Connection.PreparedStatement<TestConn>,
+                                    columnNameOrAlias: String) = TODO()
+    override suspend fun <T> values(preparedStatement: Connection.PreparedStatement<TestConn>,
+                                    params: Iterable<Any?>, columnNameOrAlias: String) = TODO()
+    override suspend fun <K, V> entries(sqlStatement: String, keyColumnNameOrAlias: String,
+                                        valueColumnNameOrAlias: String) = TODO()
+    override suspend fun <K, V> entries(sqlStatement: String, params: Iterable<Any?>,
+                                        keyColumnNameOrAlias: String,
+                                        valueColumnNameOrAlias: String) = TODO()
+    override suspend fun <K, V> entries(preparedStatement: Connection.PreparedStatement<TestConn>,
+                                        keyColumnNameOrAlias: String,
+                                        valueColumnNameOrAlias: String) = TODO()
+    override suspend fun <K, V> entries(preparedStatement: Connection.PreparedStatement<TestConn>,
+                                        params: Iterable<Any?>, keyColumnNameOrAlias: String,
+                                        valueColumnNameOrAlias: String) = TODO()
     override suspend fun affectedRows(sqlStatement: String) = TODO()
     override suspend fun affectedRows(sqlStatement: String, params: Iterable<Any?>) = TODO()
     override suspend fun affectedRows(preparedStatement: Connection.PreparedStatement<TestConn>) = TODO()
