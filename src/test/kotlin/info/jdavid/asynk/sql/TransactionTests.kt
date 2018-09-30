@@ -85,7 +85,7 @@ class TransactionTests {
     override suspend fun affectedRows(preparedStatement: Connection.PreparedStatement<TestConn>) = TODO()
     override suspend fun affectedRows(preparedStatement: Connection.PreparedStatement<TestConn>,
                                       params: Iterable<Any?>) = TODO()
-    override suspend fun aClose() {}
+    override suspend fun close() {}
   }
 
 }

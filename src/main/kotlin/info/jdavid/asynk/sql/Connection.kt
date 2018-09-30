@@ -1,12 +1,14 @@
 package info.jdavid.asynk.sql
 
+import info.jdavid.asynk.core.AsyncCloseable
+import info.jdavid.asynk.core.use
 import kotlinx.coroutines.experimental.channels.ChannelIterator
 import java.io.Closeable
 
 /**
  * Common interface for an SQL database connection.
  */
-interface Connection<C: Connection<C>>: ACloseable {
+interface Connection<C: Connection<C>>: AsyncCloseable {
 
   /**
    * Starts an SQL transaction.
@@ -219,7 +221,7 @@ interface Connection<C: Connection<C>>: ACloseable {
   /**
    * Common interface for SQL Prepared Statements. The "?" syntax should be used for binding parameters.
    */
-  interface PreparedStatement<C: Connection<C>>: ACloseable {
+  interface PreparedStatement<C: Connection<C>>: AsyncCloseable {
     /**
      * Executes this row query prepared statement and returns each row as a Map<String,Any?> where the key
      * is the column name or alias and the value is the column value for that row.
@@ -621,4 +623,12 @@ suspend inline fun <S,T:S> Connection.ResultSet<T>.reduceIndexed(operation: (ind
     accumulator = operation(index++, accumulator, iterator.next())
   }
   return accumulator
+}
+
+suspend inline fun <T : Connection<*>?, R> T.use(block: (T) -> R): R {
+  return use { block(this) }
+}
+
+suspend inline fun <T : Connection.PreparedStatement<*>?, R> T.use(block: (T) -> R): R {
+  return use { block(this) }
 }
