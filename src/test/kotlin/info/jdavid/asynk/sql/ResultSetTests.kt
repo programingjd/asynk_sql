@@ -1,10 +1,13 @@
 package info.jdavid.asynk.sql
 
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.asReceiveChannel
 import kotlinx.coroutines.experimental.channels.toCollection
 import kotlinx.coroutines.experimental.channels.toList
+import kotlinx.coroutines.experimental.coroutineScope
 import kotlinx.coroutines.experimental.currentScope
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
@@ -200,8 +203,14 @@ class ResultSetTests {
     }
   }
 
-  private suspend fun <T> channel(data: Sequence<T>) = currentScope {
-    data.asReceiveChannel(coroutineContext)
+  private suspend fun <T> channel(data: Sequence<T>): ReceiveChannel<T> = Channel<T>(Channel.UNLIMITED).apply {
+    coroutineScope {
+      data.forEach {
+        send(it)
+        delay(100)
+      }
+      close()
+    }
   }
 
   class TestResultSet<T>(private val channel: ReceiveChannel<T>): Connection.ResultSet<T> {
