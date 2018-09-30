@@ -1,7 +1,7 @@
 package info.jdavid.asynk.sql
 
 import info.jdavid.asynk.core.AsyncCloseable
-import info.jdavid.asynk.core.use
+import info.jdavid.asynk.core.internal.use
 import kotlinx.coroutines.experimental.channels.ChannelIterator
 import java.io.Closeable
 
@@ -626,9 +626,9 @@ suspend inline fun <S,T:S> Connection.ResultSet<T>.reduceIndexed(operation: (ind
 }
 
 suspend inline fun <T : Connection<*>?, R> T.use(block: (T) -> R): R {
-  return use { block(this) }
+  return use(this) { block(this) }
 }
 
 suspend inline fun <T : Connection.PreparedStatement<*>?, R> T.use(block: (T) -> R): R {
-  return use { block(this) }
+  return use(this) { block(this) }
 }
