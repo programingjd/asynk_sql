@@ -2,7 +2,7 @@ package info.jdavid.asynk.sql
 
 import info.jdavid.asynk.core.AsyncCloseable
 import info.jdavid.asynk.core.internal.use
-import kotlinx.coroutines.experimental.channels.ChannelIterator
+import kotlinx.coroutines.channels.ChannelIterator
 import java.io.Closeable
 
 /**
@@ -31,6 +31,7 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param block a function to execute in a new transaction context.
    * @return the result of [block] function.
    */
+  @Suppress("TooGenericExceptionCaught")
   suspend fun <R> withTransaction(block: suspend () -> R): R {
     var throwable: Throwable? = null
     try {
