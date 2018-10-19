@@ -66,12 +66,10 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * Executes a row query SQL statement and returns each row as a Map<String,Any?> where the key is the column
    * name or alias and the value is the column value for that row.
    * @param sqlStatement the SQL query statement.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @return the result set.
    */
   suspend fun rows(sqlStatement: String,
-                   timeoutMillis: Long = 5000L,
                    batchSize: Int = 1024): ResultSet<Map<String,Any?>>
   /**
    * Executes a row query SQL statement and returns each row as a Map<String,Any?> where the key is the column
@@ -79,23 +77,19 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * Query parameters (the "?" syntax should be used) are bound to the specified values.
    * @param sqlStatement the SQL query statement.
    * @param params the values to bind to the query parameters.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @return the result set.
    */
   suspend fun rows(sqlStatement: String, params: Iterable<Any?>,
-                   timeoutMillis: Long = 5000L,
                    batchSize: Int = 1024): ResultSet<Map<String,Any?>>
   /**
    * Executes a row query prepared statement and returns each row as Map<String,Any?> where the key is the
    * column name or alias and the value is the column value for that row.
    * @param preparedStatement the SQL prepared statement.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @return the result set.
    */
   suspend fun rows(preparedStatement: PreparedStatement<C>,
-                   timeoutMillis: Long = 5000L,
                    batchSize: Int = 1024): ResultSet<Map<String,Any?>>
   /**
    * Executes a row query prepared statement and returns each row as a Map<String,Any?> where the key is the
@@ -103,27 +97,23 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * Query parameters (the "?" syntax should be used) are bound to the specified values.
    * @param preparedStatement the SQL prepared statement.
    * @param params the values to bind to the query parameters.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @return the result set.
    */
   suspend fun rows(preparedStatement: PreparedStatement<C>,
                    params: Iterable<Any?>,
-                   timeoutMillis: Long = 5000L,
                    batchSize: Int = 1024): ResultSet<Map<String,Any?>>
 
   /**
    * Executes a row query SQL statement and returns the value of the specified column for each row.
    * @param sqlStatement the SQL query statement.
    * @param columnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param T the value type.
    * @return the result set.
    */
   suspend fun <T> values(sqlStatement: String,
                          columnNameOrAlias: String,
-                         timeoutMillis: Long = 5000L,
                          batchSize: Int = 1024): ResultSet<T>
   /**
    * Executes a row query SQL statement and returns the value of the specified column for each row.<br>
@@ -131,27 +121,23 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param sqlStatement the SQL query statement.
    * @param params the values to bind to the query parameters.
    * @param columnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param T the value type.
    * @return the result set.
    */
   suspend fun <T> values(sqlStatement: String, params: Iterable<Any?>,
                          columnNameOrAlias: String,
-                         timeoutMillis: Long = 5000L,
                          batchSize: Int = 1024): ResultSet<T>
   /**
    * Executes a row query prepared statement and returns the value of the specified column for each row.
    * @param preparedStatement the SQL prepared statement.
    * @param columnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param T the value type.
    * @return the result set.
    */
   suspend fun <T> values(preparedStatement: PreparedStatement<C>,
                          columnNameOrAlias: String,
-                         timeoutMillis: Long = 5000L,
                          batchSize: Int = 1024): ResultSet<T>
   /**
    * Executes a row query prepared statement and returns the value of the specified column for each row.<br>.
@@ -159,7 +145,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param preparedStatement the SQL prepared statement.
    * @param params the values to bind to the query parameters.
    * @param columnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param T the value type.
    * @return the result set.
@@ -167,7 +152,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
   suspend fun <T> values(preparedStatement: PreparedStatement<C>,
                          params: Iterable<Any?>,
                          columnNameOrAlias: String,
-                         timeoutMillis: Long = 5000L,
                          batchSize: Int = 1024): ResultSet<T>
 
   /**
@@ -175,7 +159,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param sqlStatement the SQL query statement.
    * @param keyColumnNameOrAlias the name or alias of the column to get the key value of.
    * @param valueColumnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param K the key type.
    * @param V the value type.
@@ -184,7 +167,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
   suspend fun <K,V> entries(sqlStatement: String,
                             keyColumnNameOrAlias: String,
                             valueColumnNameOrAlias: String,
-                            timeoutMillis: Long = 5000L,
                             batchSize: Int = 1024): ResultMap<K,V>
   /**
    * Executes a row query SQL statement and returns a key/value pair of the specified columns for
@@ -194,7 +176,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param params the values to bind to the query parameters.
    * @param keyColumnNameOrAlias the name or alias of the column to get the key value of.
    * @param valueColumnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param K the key type.
    * @param V the value type.
@@ -204,7 +185,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
                             params: Iterable<Any?>,
                             keyColumnNameOrAlias: String,
                             valueColumnNameOrAlias: String,
-                            timeoutMillis: Long = 5000L,
                             batchSize: Int = 1024): ResultMap<K,V>
   /**
    * Executes a row query prepared statement and returns a key/value pair of the specified columns for
@@ -212,7 +192,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param preparedStatement the SQL prepared statement.
    * @param keyColumnNameOrAlias the name or alias of the column to get the key value of.
    * @param valueColumnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param K the key type.
    * @param V the value type.
@@ -221,7 +200,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
   suspend fun <K,V> entries(preparedStatement: PreparedStatement<C>,
                             keyColumnNameOrAlias: String,
                             valueColumnNameOrAlias: String,
-                            timeoutMillis: Long = 5000L,
                             batchSize: Int = 1024): ResultMap<K,V>
   /**
    * Executes a row query prepared statement and returns a key/value pair of the specified columns for
@@ -231,7 +209,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param params the values to bind to the query parameters.
    * @param keyColumnNameOrAlias the name or alias of the column to get the key value of.
    * @param valueColumnNameOrAlias the name or alias of the column to get the value of.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @param batchSize the fetch batch size.
    * @param K the key type.
    * @param V the value type.
@@ -241,44 +218,37 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
                             params: Iterable<Any?>,
                             keyColumnNameOrAlias: String,
                             valueColumnNameOrAlias: String,
-                            timeoutMillis: Long = 5000L,
                             batchSize: Int = 1024): ResultMap<K,V>
 
 
   /**
    * Executes a row insert/update/delete statement.
    * @param sqlStatement the SQL statement.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @return the number of rows affected (inserted, updated or deleted, depending on the type of query).
    */
-  suspend fun affectedRows(sqlStatement: String, timeoutMillis: Long = 5000L): Int
+  suspend fun affectedRows(sqlStatement: String): Int
   /**
    * Executes a row insert/update/delete statement. Query parameters (the "?" syntax should be used) are
    * bound to the specified values.
    * @param sqlStatement the SQL statement.
    * @param params the values to bind to the statement parameters.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @return the number of rows affected (inserted, updated or deleted, depending on the type of query).
    */
-  suspend fun affectedRows(sqlStatement: String, params: Iterable<Any?>, timeoutMillis: Long = 5000L): Int
+  suspend fun affectedRows(sqlStatement: String, params: Iterable<Any?>): Int
   /**
    * Executes a row insert/update/delete prepared statement.
    * @param preparedStatement the SQL prepared statement.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @return the number of rows affected (inserted, updated or deleted, depending on the type of query).
    */
-  suspend fun affectedRows(preparedStatement: PreparedStatement<C>, timeoutMillis: Long = 5000L): Int
+  suspend fun affectedRows(preparedStatement: PreparedStatement<C>): Int
   /**
    * Executes a row insert/update/delete prepared statement. Query parameters (the "?" syntax should be used)
    * are bound to the specified values.
    * @param preparedStatement the SQL prepared statement.
    * @param params the values to bind to the statement parameters.
-   * @param timeoutMillis the timeout for the operation in milliseconds.
    * @return the number of rows affected (inserted, updated or deleted, depending on the type of query).
    */
-  suspend fun affectedRows(preparedStatement: PreparedStatement<C>,
-                           params: Iterable<Any?>,
-                           timeoutMillis: Long = 5000L): Int
+  suspend fun affectedRows(preparedStatement: PreparedStatement<C>, params: Iterable<Any?>): Int
 
   /**
    * Common interface for SQL Prepared Statements. The "?" syntax should be used for binding parameters.
@@ -287,55 +257,44 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
     /**
      * Executes this row query prepared statement and returns each row as a Map<String,Any?> where the key
      * is the column name or alias and the value is the column value for that row.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @param batchSize the fetch batch size.
      * @return the result set.
      */
-    suspend fun rows(timeoutMillis: Long = 5000L,
-                     batchSize: Int = 1024): ResultSet<Map<String,Any?>>
+    suspend fun rows(batchSize: Int = 1024): ResultSet<Map<String,Any?>>
     /**
      * Executes this row query prepared statement and returns each row as a Map<String,Any?> where the key
      * is the column name or alias and the value is the column value for that row.<br>
      * Query parameters (the "?" syntax should be used) are bound to the specified values.
      * @param params the values to bind to the query parameters.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @param batchSize the fetch batch size.
      * @return the result set.
      */
-    suspend fun rows(params: Iterable<Any?>,
-                     timeoutMillis: Long = 5000L,
-                     batchSize: Int = 1024): ResultSet<Map<String,Any?>>
+    suspend fun rows(params: Iterable<Any?>, batchSize: Int = 1024): ResultSet<Map<String,Any?>>
     /**
      * Executes this row query prepared statement and returns the value of the specified column for each row.
      * @param columnNameOrAlias the name or alias of the column to get the value of.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @param batchSize the fetch batch size.
      * @param T the value type.
      * @return the result set.
      */
-    suspend fun <T> values(columnNameOrAlias: String,
-                           timeoutMillis: Long = 5000L,
-                           batchSize: Int = 1024): ResultSet<T>
+    suspend fun <T> values(columnNameOrAlias: String, batchSize: Int = 1024): ResultSet<T>
     /**
      * Executes this row query prepared statement and returns the value of the specified column for each row.
      * <br>Query parameters (the "?" syntax should be used) are bound to the specified values.
      * @param params the values to bind to the query parameters.
      * @param columnNameOrAlias the name or alias of the column to get the value of.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @param batchSize the fetch batch size.
      * @param T the value type.
      * @return the result set.
      */
     suspend fun <T> values(params: Iterable<Any?>,
                            columnNameOrAlias: String,
-                           timeoutMillis: Long = 5000L,
                            batchSize: Int = 1024): ResultSet<T>
     /**
      * Executes this row query prepared statement and returns a key/value pair of the specified columns for
      * each row.
      * @param keyColumnNameOrAlias the name or alias of the column to get the key value of.
      * @param valueColumnNameOrAlias the name or alias of the column to get the value of.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @param batchSize the fetch batch size.
      * @param K the key type.
      * @param V the value type.
@@ -343,7 +302,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
      */
     suspend fun <K,V> entries(keyColumnNameOrAlias: String,
                               valueColumnNameOrAlias: String,
-                              timeoutMillis: Long = 5000L,
                               batchSize: Int = 1024): ResultMap<K,V>
     /**
      * Executes this row query prepared statement and returns a key/value pair of the specified columns for
@@ -352,7 +310,6 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
      * @param params the values to bind to the query parameters.
      * @param keyColumnNameOrAlias the name or alias of the column to get the key value of.
      * @param valueColumnNameOrAlias the name or alias of the column to get the value of.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @param batchSize the fetch batch size.
      * @param K the key type.
      * @param V the value type.
@@ -361,23 +318,19 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
     suspend fun <K,V> entries(params: Iterable<Any?>,
                               keyColumnNameOrAlias: String,
                               valueColumnNameOrAlias: String,
-                              timeoutMillis: Long = 5000L,
                               batchSize: Int = 1024): ResultMap<K,V>
     /**
      * Executes this row insert/update/delete prepared statement.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @return the number of rows affected (inserted, updated or deleted, depending on the type of query).
      */
-    suspend fun affectedRows(timeoutMillis: Long = 5000L): Int
+    suspend fun affectedRows(): Int
     /**
      * Executes this row insert/update/delete prepared statement. Query parameters (the "?" syntax should be
      * used) are bound to the specified values.
      * @param params the values to bind to the statement parameters.
-     * @param timeoutMillis the timeout for the operation in milliseconds.
      * @return the number of rows affected (inserted, updated or deleted, depending on the type of query).
      */
-    suspend fun affectedRows(params: Iterable<Any?>,
-                             timeoutMillis: Long = 5000L): Int
+    suspend fun affectedRows(params: Iterable<Any?>): Int
   }
 
   /**
