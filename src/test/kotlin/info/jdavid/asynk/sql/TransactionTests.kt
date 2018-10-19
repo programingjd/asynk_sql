@@ -56,35 +56,50 @@ class TransactionTests {
       transaction = false
       rollback = true
     }
+
     override suspend fun prepare(sqlStatement: String) = TODO()
-    override suspend fun rows(sqlStatement: String) = TODO()
-    override suspend fun rows(sqlStatement: String, params: Iterable<Any?>) = TODO()
-    override suspend fun rows(preparedStatement: Connection.PreparedStatement<TestConn>) = TODO()
+    override suspend fun rows(sqlStatement: String, timeoutMillis: Long, batchSize: Int) = TODO()
+    override suspend fun rows(sqlStatement: String, params: Iterable<Any?>,
+                              timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun rows(preparedStatement: Connection.PreparedStatement<TestConn>,
-                              params: Iterable<Any?>) = TODO()
-    override suspend fun <T> values(sqlStatement: String, columnNameOrAlias: String) = TODO()
+                              timeoutMillis: Long, batchSize: Int) = TODO()
+    override suspend fun rows(preparedStatement: Connection.PreparedStatement<TestConn>,
+                              params: Iterable<Any?>,
+                              timeoutMillis: Long, batchSize: Int) = TODO()
+    override suspend fun <T> values(sqlStatement: String, columnNameOrAlias: String,
+                                    timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <T> values(sqlStatement: String, params: Iterable<Any?>,
-                                    columnNameOrAlias: String) = TODO()
+                                    columnNameOrAlias: String,
+                                    timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <T> values(preparedStatement: Connection.PreparedStatement<TestConn>,
-                                    columnNameOrAlias: String) = TODO()
+                                    columnNameOrAlias: String,
+                                    timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <T> values(preparedStatement: Connection.PreparedStatement<TestConn>,
-                                    params: Iterable<Any?>, columnNameOrAlias: String) = TODO()
+                                    params: Iterable<Any?>, columnNameOrAlias: String,
+                                    timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <K, V> entries(sqlStatement: String, keyColumnNameOrAlias: String,
-                                        valueColumnNameOrAlias: String) = TODO()
+                                        valueColumnNameOrAlias: String,
+                                        timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <K, V> entries(sqlStatement: String, params: Iterable<Any?>,
                                         keyColumnNameOrAlias: String,
-                                        valueColumnNameOrAlias: String) = TODO()
+                                        valueColumnNameOrAlias: String,
+                                        timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <K, V> entries(preparedStatement: Connection.PreparedStatement<TestConn>,
                                         keyColumnNameOrAlias: String,
-                                        valueColumnNameOrAlias: String) = TODO()
+                                        valueColumnNameOrAlias: String,
+                                        timeoutMillis: Long, batchSize: Int) = TODO()
     override suspend fun <K, V> entries(preparedStatement: Connection.PreparedStatement<TestConn>,
                                         params: Iterable<Any?>, keyColumnNameOrAlias: String,
-                                        valueColumnNameOrAlias: String) = TODO()
-    override suspend fun affectedRows(sqlStatement: String) = TODO()
-    override suspend fun affectedRows(sqlStatement: String, params: Iterable<Any?>) = TODO()
-    override suspend fun affectedRows(preparedStatement: Connection.PreparedStatement<TestConn>) = TODO()
+                                        valueColumnNameOrAlias: String,
+                                        timeoutMillis: Long, batchSize: Int) = TODO()
+    override suspend fun affectedRows(sqlStatement: String, timeoutMillis: Long) = TODO()
+    override suspend fun affectedRows(sqlStatement: String, params: Iterable<Any?>,
+                                      timeoutMillis: Long) = TODO()
     override suspend fun affectedRows(preparedStatement: Connection.PreparedStatement<TestConn>,
-                                      params: Iterable<Any?>) = TODO()
+                                      timeoutMillis: Long) = TODO()
+    override suspend fun affectedRows(preparedStatement: Connection.PreparedStatement<TestConn>,
+                                      params: Iterable<Any?>,
+                                      timeoutMillis: Long) = TODO()
     override suspend fun close() {}
   }
 

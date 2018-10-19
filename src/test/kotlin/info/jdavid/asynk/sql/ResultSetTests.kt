@@ -216,7 +216,7 @@ class ResultSetTests {
     override suspend fun toList() = channel.toList()
     override suspend fun <C : MutableCollection<in T>> toCollection(destination: C) =
       channel.toCollection(destination)
-    override fun close() {}
+    override suspend fun close() {}
   }
 
 
