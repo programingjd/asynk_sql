@@ -358,7 +358,7 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
  * Fetches all the rows and returns their values as a list, and then closes the result set.
  * @return a list with all the row values in the result set.
  */
-suspend inline fun <T> Connection.ResultSet<T>.toList(): List<T> {
+suspend fun <T> Connection.ResultSet<T>.toList(): List<T> {
   return toMutableList()
 }
 
@@ -366,7 +366,7 @@ suspend inline fun <T> Connection.ResultSet<T>.toList(): List<T> {
  * Fetches all the rows and returns their values as a mutable list, and then closes the result set.
  * @return a mutable list with all the row values in the result set.
  */
-suspend inline fun <T> Connection.ResultSet<T>.toMutableList(): MutableList<T> {
+suspend fun <T> Connection.ResultSet<T>.toMutableList(): MutableList<T> {
   return toCollection(ArrayList())
 }
 
@@ -376,7 +376,7 @@ suspend inline fun <T> Connection.ResultSet<T>.toMutableList(): MutableList<T> {
  * @param C the collection type.
  * @return the collection with all the row values in the result set added to it.
  */
-suspend inline fun <T,C: MutableCollection<in T>> Connection.ResultSet<T>.toCollection(destination: C): C {
+suspend fun <T,C: MutableCollection<in T>> Connection.ResultSet<T>.toCollection(destination: C): C {
   return iterate {
     while (it.hasNext()) destination.add(it.next())
     destination
@@ -389,8 +389,8 @@ suspend inline fun <T,C: MutableCollection<in T>> Connection.ResultSet<T>.toColl
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.flatMapTo(
-  destination: C, crossinline transform: (T) -> Sequence<R>
+suspend fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.flatMapTo(
+  destination: C, transform: (T) -> Sequence<R>
 ): C {
   return iterate {
     while(it.hasNext()) {
@@ -411,7 +411,7 @@ suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.flat
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V> Connection.ResultSet<T>.associate(crossinline transform: (T) -> Pair<K,V>) =
+suspend fun <T,K,V> Connection.ResultSet<T>.associate(transform: (T) -> Pair<K,V>) =
   associateTo(LinkedHashMap(), transform)
 
 /**
@@ -422,8 +422,8 @@ suspend inline fun <T,K,V> Connection.ResultSet<T>.associate(crossinline transfo
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V,M: MutableMap<in K, in V>> Connection.ResultSet<T>.associateTo(
-  destination: M, crossinline transform: (T) -> Pair<K,V>
+suspend fun <T,K,V,M: MutableMap<in K, in V>> Connection.ResultSet<T>.associateTo(
+  destination: M, transform: (T) -> Pair<K,V>
 ): M {
   return iterate {
     while (it.hasNext()) {
@@ -444,7 +444,7 @@ suspend inline fun <T,K,V,M: MutableMap<in K, in V>> Connection.ResultSet<T>.ass
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K> Connection.ResultSet<T>.associateBy(crossinline keySelector: (T) -> K) =
+suspend fun <T,K> Connection.ResultSet<T>.associateBy(keySelector: (T) -> K) =
   associateByTo(LinkedHashMap(), keySelector)
 
 /**
@@ -457,8 +457,8 @@ suspend inline fun <T,K> Connection.ResultSet<T>.associateBy(crossinline keySele
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,M: MutableMap<in K, in T>> Connection.ResultSet<T>.associateByTo(
-  destination: M, crossinline keySelector: (T) -> K
+suspend fun <T,K,M: MutableMap<in K, in T>> Connection.ResultSet<T>.associateByTo(
+  destination: M, keySelector: (T) -> K
 ): M {
   return iterate {
     while (it.hasNext()) {
@@ -480,8 +480,8 @@ suspend inline fun <T,K,M: MutableMap<in K, in T>> Connection.ResultSet<T>.assoc
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V> Connection.ResultSet<T>.associateBy(
-  crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
+suspend fun <T,K,V> Connection.ResultSet<T>.associateBy(
+  keySelector: (T) -> K, valueTransform: (T) -> V
 ) = associateByTo(LinkedHashMap(), keySelector, valueTransform)
 
 /**
@@ -494,8 +494,8 @@ suspend inline fun <T,K,V> Connection.ResultSet<T>.associateBy(
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V,M : MutableMap<in K, in V>> Connection.ResultSet<T>.associateByTo(
-  destination: M, crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
+suspend fun <T,K,V,M : MutableMap<in K, in V>> Connection.ResultSet<T>.associateByTo(
+  destination: M, keySelector: (T) -> K, valueTransform: (T) -> V
 ): M {
   return iterate {
     while (it.hasNext()) {
@@ -512,7 +512,7 @@ suspend inline fun <T,K,V,M : MutableMap<in K, in V>> Connection.ResultSet<T>.as
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,R> Connection.ResultSet<T>.fold(initial: R, crossinline operation: (acc: R,T) -> R): R {
+suspend fun <T,R> Connection.ResultSet<T>.fold(initial: R, operation: (acc: R,T) -> R): R {
   return iterate {
     var accumulator = initial
     while (it.hasNext()) {
@@ -532,8 +532,8 @@ suspend inline fun <T,R> Connection.ResultSet<T>.fold(initial: R, crossinline op
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,R> Connection.ResultSet<T>.foldIndexed(
-  initial: R, crossinline operation: (index: Int, acc: R, T) -> R
+suspend fun <T,R> Connection.ResultSet<T>.foldIndexed(
+  initial: R, operation: (index: Int, acc: R, T) -> R
 ): R {
   return iterate {
     var index = 0
@@ -550,7 +550,7 @@ suspend inline fun <T,R> Connection.ResultSet<T>.foldIndexed(
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T> Connection.ResultSet<T>.forEach(crossinline action: (T) -> Unit) {
+suspend fun <T> Connection.ResultSet<T>.forEach(action: (T) -> Unit) {
   iterate { while(it.hasNext()) action(it.next()) }
 }
 
@@ -562,7 +562,7 @@ suspend inline fun <T> Connection.ResultSet<T>.forEach(crossinline action: (T) -
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T> Connection.ResultSet<T>.forEachIndexed(crossinline action: (index: Int, T) -> Unit) {
+suspend fun <T> Connection.ResultSet<T>.forEachIndexed(action: (index: Int, T) -> Unit) {
   iterate {
     var index = 0
     iterate { while(it.hasNext()) action(index++, it.next()) }
@@ -578,7 +578,7 @@ suspend inline fun <T> Connection.ResultSet<T>.forEachIndexed(crossinline action
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K> Connection.ResultSet<T>.groupBy(crossinline keySelector: (T) -> K) =
+suspend fun <T,K> Connection.ResultSet<T>.groupBy(keySelector: (T) -> K) =
   groupByTo(LinkedHashMap(), keySelector)
 
 /**
@@ -591,9 +591,8 @@ suspend inline fun <T,K> Connection.ResultSet<T>.groupBy(crossinline keySelector
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V> Connection.ResultSet<T>.groupBy(
-  crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
-) = groupByTo(LinkedHashMap(), keySelector, valueTransform)
+suspend fun <T,K,V> Connection.ResultSet<T>.groupBy(keySelector: (T) -> K, valueTransform: (T) -> V) =
+  groupByTo(LinkedHashMap(), keySelector, valueTransform)
 
 /**
  * Groups elements of the result set by the key returned by the given [keySelector] function applied to each
@@ -604,8 +603,8 @@ suspend inline fun <T,K,V> Connection.ResultSet<T>.groupBy(
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,M: MutableMap<in K, MutableList<T>>> Connection.ResultSet<T>.groupByTo(
-  destination: M, crossinline keySelector: (T) -> K
+suspend fun <T,K,M: MutableMap<in K, MutableList<T>>> Connection.ResultSet<T>.groupByTo(
+  destination: M, keySelector: (T) -> K
 ): M {
   return iterate {
     while (it.hasNext()) {
@@ -627,8 +626,8 @@ suspend inline fun <T,K,M: MutableMap<in K, MutableList<T>>> Connection.ResultSe
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V,M: MutableMap<in K, MutableList<V>>> Connection.ResultSet<T>.groupByTo(
-  destination: M, crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
+suspend fun <T,K,V,M: MutableMap<in K, MutableList<V>>> Connection.ResultSet<T>.groupByTo(
+  destination: M, keySelector: (T) -> K, valueTransform: (T) -> V
 ): M {
   return iterate {
     while (it.hasNext()) {
@@ -647,8 +646,8 @@ suspend inline fun <T,K,V,M: MutableMap<in K, MutableList<V>>> Connection.Result
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapTo(
-  destination: C, crossinline transform: (T) -> R
+suspend fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapTo(
+  destination: C, transform: (T) -> R
 ): C {
   return iterate {
     while (it.hasNext()) destination.add(transform(it.next()))
@@ -664,8 +663,8 @@ suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapT
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapIndexedTo(
-  destination: C, crossinline transform: (index: Int, T) -> R
+suspend fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapIndexedTo(
+  destination: C, transform: (index: Int, T) -> R
 ): C {
   return iterate {
     var index = 0
@@ -680,7 +679,7 @@ suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapI
  *
  * The operation is _terminal_.
  */
-suspend inline fun <S,T:S> Connection.ResultSet<T>.reduce(crossinline operation: (acc: S, T) -> S): S {
+suspend fun <S,T:S> Connection.ResultSet<T>.reduce(operation: (acc: S, T) -> S): S {
   return iterate {
     if (!it.hasNext()) throw UnsupportedOperationException("Empty sequence can't be reduced.")
     var accumulator: S = it.next()
@@ -699,9 +698,7 @@ suspend inline fun <S,T:S> Connection.ResultSet<T>.reduce(crossinline operation:
  *
  * The operation is _terminal_.
  */
-suspend inline fun <S,T:S> Connection.ResultSet<T>.reduceIndexed(
-  crossinline operation: (index: Int, acc: S, T) -> S
-): S {
+suspend fun <S,T:S> Connection.ResultSet<T>.reduceIndexed(operation: (index: Int, acc: S, T) -> S): S {
   return iterate {
     if (!it.hasNext()) throw UnsupportedOperationException("Empty sequence can't be reduced.")
     var index = 1
