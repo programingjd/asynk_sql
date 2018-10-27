@@ -1,9 +1,8 @@
 package info.jdavid.asynk.sql
 
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ChannelIterator
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.toCollection
-import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -18,11 +17,11 @@ class ResultSetTests {
     runBlocking {
       TestResultSet(channel(sequenceOf("a", "b", "c"))).apply {
         assertEquals("a,b,c", toList().joinToString(","))
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "a", "c"))).apply {
         assertEquals("a,b,c", toCollection(LinkedHashSet()).joinToString(","))
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -35,21 +34,21 @@ class ResultSetTests {
           "ka->va,kb->vb,kc->vc",
           associate { "k$it" to "v$it" }.map { "${it.key}->${it.value}" }.joinToString(",")
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "a", "c"))).apply {
         assertEquals(
           "A->a,B->b,C->c",
           associateBy { it.toUpperCase() }.map { "${it.key}->${it.value}" }.joinToString(",")
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "a", "c"))).apply {
         assertEquals(
           "ka->va,kb->vb,kc->vc",
           associateBy({ "k$it" }, { "v$it" }).map { "${it.key}->${it.value}" }.joinToString(",")
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -64,7 +63,7 @@ class ResultSetTests {
             rs.flatMapTo(this) { it.chunked(1).asSequence() }
           }.joinToString(",")
         )
-        assertFalse(rs.iterator().hasNext())
+        assertFalse(rs.iterate { it.hasNext() })
       }
     }
   }
@@ -77,14 +76,14 @@ class ResultSetTests {
           "abcdef",
           fold(StringBuilder()) { sb, it -> sb.append(it) }.toString()
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "c", "d", "e", "f"))).apply {
         assertEquals(
           "1a2b3c4d5e6f",
           foldIndexed(StringBuilder()) { i, sb, it -> sb.append(i+1).append(it) }.toString()
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -99,7 +98,7 @@ class ResultSetTests {
           "abcdef",
           sb.toString()
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "c", "d", "e", "f"))).apply {
         val sb = StringBuilder()
@@ -108,7 +107,7 @@ class ResultSetTests {
           "1a2b3c4d5e6f",
           sb.toString()
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -135,7 +134,7 @@ class ResultSetTests {
           assertEquals(1, it?.size)
           assertEquals("c4", it?.first())
         }
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a1", "b2", "a3", "c4"))).apply {
         val groups = groupBy({ it.chunked(1).first() }, { it.chunked(1).last() })
@@ -156,7 +155,7 @@ class ResultSetTests {
           assertEquals(1, it?.size)
           assertEquals("4", it?.first())
         }
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -169,14 +168,14 @@ class ResultSetTests {
           "ABCDEF",
           mapTo(mutableListOf()) { it.toUpperCase() }.joinToString("")
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "c", "d", "e", "f"))).apply {
         assertEquals(
           "1a2b3c4d5e6f",
           mapIndexedTo(mutableListOf()) { i, it -> "${i+1}$it" }.joinToString("")
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -189,14 +188,14 @@ class ResultSetTests {
           "abcdef",
           reduce{ a, b -> a + b }
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
       TestResultSet(channel(sequenceOf("a", "b", "c", "d", "e", "f"))).apply {
         assertEquals(
           "a2b3c4d5e6f",
           reduceIndexed { i, a, b -> a + (i+1) + b }
         )
-        assertFalse(iterator().hasNext())
+        assertFalse(iterate { it.hasNext() })
       }
     }
   }
@@ -212,10 +211,9 @@ class ResultSetTests {
   }
 
   class TestResultSet<T>(private val channel: ReceiveChannel<T>): Connection.ResultSet<T> {
-    override fun iterator() = channel.iterator()
-    override suspend fun toList() = channel.toList()
-    override suspend fun <C : MutableCollection<in T>> toCollection(destination: C) =
-      channel.toCollection(destination)
+    override suspend fun <R> iterate(block: suspend (ChannelIterator<T>) -> R): R {
+      return block(channel.iterator())
+    }
     override suspend fun close() {}
   }
 

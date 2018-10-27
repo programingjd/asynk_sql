@@ -338,20 +338,11 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param T the data type returned for each row result.
    */
   interface ResultSet<T>: AsyncCloseable {
-    operator fun iterator(): ChannelIterator<T>
+    /**
+     * Executes the specified lambda on an iterator and then closes the result set.
+     */
+    suspend fun <R> iterate(block: suspend (ChannelIterator<T>) -> R): R
 
-    /**
-     * Fetches all the rows and returns their values as a list.
-     * @return a list with all the row values in the result set.
-     */
-    suspend fun toList(): List<T>
-    /**
-     * Fetches all the rows and adds their values to the supplied collection.
-     * @param destination the target collection.
-     * @param C the collection type.
-     * @return the collection with all the row values in the result set added to it.
-     */
-    suspend fun <C: MutableCollection<in T>> toCollection(destination: C): C
   }
 
   /**
@@ -359,43 +350,60 @@ interface Connection<C: Connection<C>>: AsyncCloseable {
    * @param K the data type of the key returned for each row.
    * @param V the data type of the value returned for each row.
    */
-  interface ResultMap<K,V>: ResultSet<Pair<K,V>> {
-    /**
-     * Fetches the key/value pairs for all the rows and returns them as a map. If the same key is returned
-     * more than once, then the last value is retained.
-     * @return a map of the row values in the result set.
-     */
-    suspend fun toMap(): Map<K,V>
-    /**
-     * Fetches the key/value pairs for all the rows and adds them to the supplied map.
-     * @param destination the target map.
-     * @param M the map type.
-     * @return the map with all the row key/value pairs in the result set added to it.
-     */
-    suspend fun <M: MutableMap<in K, in V>> toMap(destination: M): M
-  }
+  interface ResultMap<K,V>: ResultSet<Pair<K,V>>
 
+}
+
+/**
+ * Fetches all the rows and returns their values as a list, and then closes the result set.
+ * @return a list with all the row values in the result set.
+ */
+suspend inline fun <T> Connection.ResultSet<T>.toList(): List<T> {
+  return toMutableList()
+}
+
+/**
+ * Fetches all the rows and returns their values as a mutable list, and then closes the result set.
+ * @return a mutable list with all the row values in the result set.
+ */
+suspend inline fun <T> Connection.ResultSet<T>.toMutableList(): MutableList<T> {
+  return toCollection(ArrayList())
+}
+
+/**
+ * Fetches all the rows and adds their values to the supplied collection, and then closes the result set.
+ * @param destination the target collection.
+ * @param C the collection type.
+ * @return the collection with all the row values in the result set added to it.
+ */
+suspend inline fun <T,C: MutableCollection<in T>> Connection.ResultSet<T>.toCollection(destination: C): C {
+  return iterate {
+    while (it.hasNext()) destination.add(it.next())
+    destination
+  }
 }
 
 /**
  * Appends all elements yielded from results of [transform] function being invoked on each element of
- * the result set, to the given [destination].
+ * the result set, to the given [destination], and then closes the result set.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.flatMapTo(
-  destination: C, transform: (T) -> Sequence<R>
+  destination: C, crossinline transform: (T) -> Sequence<R>
 ): C {
-  for (element in this) {
-    val list = transform(element)
-    destination.addAll(list)
+  return iterate {
+    while(it.hasNext()) {
+      val list = transform(it.next())
+      destination.addAll(list)
+    }
+    destination
   }
-  return destination
 }
 
 /**
  * Returns a [Map] containing key-value pairs provided by [transform] function applied to elements of
- * the result set.
+ * the result set, and then closes the result set.
  *
  * If any of two pairs would have the same key the last one gets added to the map.
  *
@@ -403,62 +411,67 @@ suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.flat
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V> Connection.ResultSet<T>.associate(transform: (T) -> Pair<K,V>) =
+suspend inline fun <T,K,V> Connection.ResultSet<T>.associate(crossinline transform: (T) -> Pair<K,V>) =
   associateTo(LinkedHashMap(), transform)
 
 /**
  * Populates and returns the [destination] mutable map with key-value pairs provided by [transform]
- * function applied to each element of the result set.
+ * function applied to each element of the result set, and then closes the result set.
  *
  * If any of two pairs would have the same key the last one gets added to the map.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,K,V,M: MutableMap<in K, in V>> Connection.ResultSet<T>.associateTo(
-  destination: M, transform: (T) -> Pair<K,V>
+  destination: M, crossinline transform: (T) -> Pair<K,V>
 ): M {
-  for (element in this) {
-    destination += transform(element)
+  return iterate {
+    while (it.hasNext()) {
+      destination += transform(it.next())
+    }
+    destination
   }
-  return destination
 }
 
 /**
  * Returns a [Map] containing the elements from the result set indexed by the key
- * returned from [keySelector] function applied to each element.
+ * returned from [keySelector] function applied to each element, and then closes the result set.
  *
- * If any two elements would have the same key returned by [keySelector] the last one gets added to
+ * If any two elements would have the same key returned by [keySelector], the last one gets added to
  * the map.
  *
  * The returned map preserves the entry iteration order of the result set.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K> Connection.ResultSet<T>.associateBy(keySelector: (T) -> K) =
+suspend inline fun <T,K> Connection.ResultSet<T>.associateBy(crossinline keySelector: (T) -> K) =
   associateByTo(LinkedHashMap(), keySelector)
 
 /**
- * Populates and returns the [destination] mutable map with key-value pairs,
- * where key is provided by the [keySelector] function applied to each element of the result set and
+ * Populates and returns the [destination] mutable map with key-value pairs and then closes the result set.
+ * The key is provided by the [keySelector] function applied to each element of the result set and
  * value is the element itself.
  *
- * If any two elements would have the same key returned by [keySelector] the last one gets added to
+ * If any two elements would have the same key returned by [keySelector], the last one gets added to
  * the map.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,K,M: MutableMap<in K, in T>> Connection.ResultSet<T>.associateByTo(
-  destination: M, keySelector: (T) -> K
+  destination: M, crossinline keySelector: (T) -> K
 ): M {
-  for (element in this) {
-    destination.put(keySelector(element), element)
+  return iterate {
+    while (it.hasNext()) {
+      val element = it.next()
+      destination.put(keySelector(element), element)
+    }
+    destination
   }
-  return destination
 }
 
 /**
  * Returns a [Map] containing the values provided by [valueTransform] and indexed by [keySelector]
- * functions applied to elements of the result set.
+ * functions applied to elements of the result set, and then closes the result set.
  *
  * If any two elements would have the same key returned by [keySelector] the last one gets added to
  * the map.
@@ -468,13 +481,13 @@ suspend inline fun <T,K,M: MutableMap<in K, in T>> Connection.ResultSet<T>.assoc
  * The operation is _terminal_.
  */
 suspend inline fun <T,K,V> Connection.ResultSet<T>.associateBy(
-  keySelector: (T) -> K, valueTransform: (T) -> V
+  crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
 ) = associateByTo(LinkedHashMap(), keySelector, valueTransform)
 
 /**
- * Populates and returns the [destination] mutable map with key-value pairs, where key is provided
- * by the [keySelector] function and value is provided by the [valueTransform] function applied to
- * elements of the result set.
+ * Populates and returns the [destination] mutable map with key-value pairs and then closes the result set.
+ * The key is provided by the [keySelector] function and value is provided by the [valueTransform] function
+ * applied to elements of the result set.
  *
  * If any two elements would have the same key returned by [keySelector] the last one gets added to
  * the map.
@@ -482,190 +495,257 @@ suspend inline fun <T,K,V> Connection.ResultSet<T>.associateBy(
  * The operation is _terminal_.
  */
 suspend inline fun <T,K,V,M : MutableMap<in K, in V>> Connection.ResultSet<T>.associateByTo(
-  destination: M, keySelector: (T) -> K, valueTransform: (T) -> V
+  destination: M, crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
 ): M {
-  for (element in this) {
-    destination.put(keySelector(element), valueTransform(element))
+  return iterate {
+    while (it.hasNext()) {
+      val element = it.next()
+      destination.put(keySelector(element), valueTransform(element))
+    }
+    destination
   }
-  return destination
 }
 
 /**
  * Accumulates value starting with [initial] value and applying [operation] from left to right to
- * current accumulator value and each element.
+ * current accumulator value and each element, and then closes the result set.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,R> Connection.ResultSet<T>.fold(initial: R, operation: (acc: R, T) -> R): R {
-  var accumulator = initial
-  for (element in this) accumulator = operation(accumulator, element)
-  return accumulator
+suspend inline fun <T,R> Connection.ResultSet<T>.fold(initial: R, crossinline operation: (acc: R,T) -> R): R {
+  return iterate {
+    var accumulator = initial
+    while (it.hasNext()) {
+      val element = it.next()
+      accumulator = operation(accumulator, element)
+    }
+    accumulator
+  }
 }
 
 /**
  * Accumulates value starting with [initial] value and applying [operation] from left to right
- * to current accumulator value and each element with its index in the result set.
+ * to current accumulator value and each element with its index in the result set, and then closes the
+ * result set.
  * @param [operation] function that takes the index of an element, current accumulator value
  * and the element itself, and calculates the next accumulator value.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,R> Connection.ResultSet<T>.foldIndexed(
-  initial: R, operation: (index: Int, acc: R, T) -> R
+  initial: R, crossinline operation: (index: Int, acc: R, T) -> R
 ): R {
-  var index = 0
-  var accumulator = initial
-  for (element in this) accumulator = operation(index++, accumulator, element)
-  return accumulator
+  return iterate {
+    var index = 0
+    var accumulator = initial
+    while (it.hasNext()) {
+      accumulator = operation(index++, accumulator, it.next())
+    }
+    accumulator
+  }
 }
 
 /**
- * Performs the given [action] on each element.
+ * Performs the given [action] on each element, and then closes the result set.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T> Connection.ResultSet<T>.forEach(action: (T) -> Unit) {
-  for (element in this) action(element)
+suspend inline fun <T> Connection.ResultSet<T>.forEach(crossinline action: (T) -> Unit) {
+  iterate { while(it.hasNext()) action(it.next()) }
 }
 
 /**
- * Performs the given [action] on each element, providing sequential index with the element.
+ * Performs the given [action] on each element, providing sequential index with the element, and then
+ * closes the result set.
  * @param [action] function that takes the index of an element and the element itself
  * and performs the desired action on the element.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T> Connection.ResultSet<T>.forEachIndexed(action: (index: Int, T) -> Unit) {
-  var index = 0
-  for (item in this) action(index++, item)
+suspend inline fun <T> Connection.ResultSet<T>.forEachIndexed(crossinline action: (index: Int, T) -> Unit) {
+  iterate {
+    var index = 0
+    iterate { while(it.hasNext()) action(index++, it.next()) }
+  }
 }
 
 /**
  * Groups elements of the result set by the key returned by the given [keySelector] function applied to each
- * element and returns a map where each group key is associated with a list of corresponding elements.
+ * element and returns a map where each group key is associated with a list of corresponding elements, and
+ * then closes the result set.
  *
  * The returned map preserves the entry iteration order of the keys produced from the result set.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K> Connection.ResultSet<T>.groupBy(keySelector: (T) -> K) =
+suspend inline fun <T,K> Connection.ResultSet<T>.groupBy(crossinline keySelector: (T) -> K) =
   groupByTo(LinkedHashMap(), keySelector)
 
 /**
  * Groups values returned by the [valueTransform] function applied to each element of the result set
  * by the key returned by the given [keySelector] function applied to the element
- * and returns a map where each group key is associated with a list of corresponding values.
+ * and returns a map where each group key is associated with a list of corresponding values, and then closes
+ * the result set.
  *
  * The returned map preserves the entry iteration order of the keys produced from the result set.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <T,K,V> Connection.ResultSet<T>.groupBy(keySelector: (T) -> K, valueTransform: (T) -> V) =
-  groupByTo(LinkedHashMap(), keySelector, valueTransform)
+suspend inline fun <T,K,V> Connection.ResultSet<T>.groupBy(
+  crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
+) = groupByTo(LinkedHashMap(), keySelector, valueTransform)
 
 /**
  * Groups elements of the result set by the key returned by the given [keySelector] function applied to each
- * element and puts to the [destination] map each group key associated with a list of corresponding elements.
+ * element and puts to the [destination] map each group key associated with a list of corresponding elements,
+ * and then closes the result set.
  *
  * @return The [destination] map.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,K,M: MutableMap<in K, MutableList<T>>> Connection.ResultSet<T>.groupByTo(
-  destination: M, keySelector: (T) -> K
+  destination: M, crossinline keySelector: (T) -> K
 ): M {
-  for (element in this) {
-    val key = keySelector(element)
-    val list = destination.getOrPut(key) { ArrayList() }
-    list.add(element)
+  return iterate {
+    while (it.hasNext()) {
+      val element = it.next()
+      val key = keySelector(element)
+      val list = destination.getOrPut(key) { ArrayList() }
+      list.add(element)
+    }
+    destination
   }
-  return destination
 }
 
 /**
  * Groups values returned by the [valueTransform] function applied to each element of the result set by the
  * key returned by the given [keySelector] function applied to the element and puts to the [destination]
- * map each group key associated with a list of corresponding values.
+ * map each group key associated with a list of corresponding values, and then closes the result set.
  *
  * @return The [destination] map.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,K,V,M: MutableMap<in K, MutableList<V>>> Connection.ResultSet<T>.groupByTo(
-  destination: M, keySelector: (T) -> K, valueTransform: (T) -> V
+  destination: M, crossinline keySelector: (T) -> K, crossinline valueTransform: (T) -> V
 ): M {
-  for (element in this) {
-    val key = keySelector(element)
-    val list = destination.getOrPut(key) { ArrayList() }
-    list.add(valueTransform(element))
+  return iterate {
+    while (it.hasNext()) {
+      val element = it.next()
+      val key = keySelector(element)
+      val list = destination.getOrPut(key) { ArrayList() }
+      list.add(valueTransform(element))
+    }
+    destination
   }
-  return destination
 }
 
 /**
  * Applies the given [transform] function to each element of the result set and appends the results to the
- * given [destination].
+ * given [destination], and then closes the result set.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapTo(
-  destination: C, transform: (T) -> R
+  destination: C, crossinline transform: (T) -> R
 ): C {
-  for (item in this)
-    destination.add(transform(item))
-  return destination
+  return iterate {
+    while (it.hasNext()) destination.add(transform(it.next()))
+    destination
+  }
 }
 
 /**
  * Applies the given [transform] function to each element and its index in the result set and appends the
- * results to the given [destination].
+ * results to the given [destination], and then closes the result set.
  * @param [transform] function that takes the index of an element and the element itself
  * and returns the result of the transform applied to the element.
  *
  * The operation is _terminal_.
  */
 suspend inline fun <T,R,C: MutableCollection<in R>> Connection.ResultSet<T>.mapIndexedTo(
-  destination: C, transform: (index: Int, T) -> R
+  destination: C, crossinline transform: (index: Int, T) -> R
 ): C {
-  var index = 0
-  for (item in this)
-    destination.add(transform(index++, item))
-  return destination
+  return iterate {
+    var index = 0
+    while (it.hasNext()) destination.add(transform(index++, it.next()))
+    destination
+  }
 }
 
 /**
  * Accumulates value starting with the first element and applying [operation] from left to right to current
- * accumulator value and each element.
+ * accumulator value and each element, and then closes the result set.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <S,T:S> Connection.ResultSet<T>.reduce(operation: (acc: S, T) -> S): S {
-  val iterator = this.iterator()
-  if (!iterator.hasNext()) throw UnsupportedOperationException("Empty sequence can't be reduced.")
-  var accumulator: S = iterator.next()
-  while (iterator.hasNext()) {
-    accumulator = operation(accumulator, iterator.next())
+suspend inline fun <S,T:S> Connection.ResultSet<T>.reduce(crossinline operation: (acc: S, T) -> S): S {
+  return iterate {
+    if (!it.hasNext()) throw UnsupportedOperationException("Empty sequence can't be reduced.")
+    var accumulator: S = it.next()
+    while (it.hasNext()) {
+      accumulator = operation(accumulator, it.next())
+    }
+    accumulator
   }
-  return accumulator
 }
 
 /**
  * Accumulates value starting with the first element and applying [operation] from left to right to current
- * accumulator value and each element with its index in the result set.
+ * accumulator value and each element with its index in the result set, and then closes the result set.
  * @param [operation] function that takes the index of an element, current accumulator value
  * and the element itself and calculates the next accumulator value.
  *
  * The operation is _terminal_.
  */
-suspend inline fun <S,T:S> Connection.ResultSet<T>.reduceIndexed(operation: (index: Int, acc: S, T) -> S): S {
-  val iterator = this.iterator()
-  if (!iterator.hasNext()) throw UnsupportedOperationException("Empty sequence can't be reduced.")
-  var index = 1
-  var accumulator: S = iterator.next()
-  while (iterator.hasNext()) {
-    accumulator = operation(index++, accumulator, iterator.next())
+suspend inline fun <S,T:S> Connection.ResultSet<T>.reduceIndexed(
+  crossinline operation: (index: Int, acc: S, T) -> S
+): S {
+  return iterate {
+    if (!it.hasNext()) throw UnsupportedOperationException("Empty sequence can't be reduced.")
+    var index = 1
+    var accumulator: S = it.next()
+    while (it.hasNext()) {
+      accumulator = operation(index++, accumulator, it.next())
+    }
+    accumulator
   }
-  return accumulator
+}
+
+/**
+ * Fetches the key/value pairs for all the rows and returns them as a map, and then closes the result set.
+ * If the same key is returned more than once, then the last value is retained.
+ * @return a map of the row values in the result set.
+ */
+suspend fun <K,V> Connection.ResultMap<K, V>.toMap(): Map<K,V> {
+  return toMutableMap()
+}
+
+/**
+ * Fetches the key/value pairs for all the rows and returns them as a mutable map, and then closes the
+ * result set. If the same key is returned more than once, then the last value is retained.
+ * @return a map of the row values in the result set.
+ */
+suspend fun <K,V> Connection.ResultMap<K, V>.toMutableMap(): MutableMap<K,V> {
+  return toMap(LinkedHashMap())
+}
+
+/**
+ * Fetches the key/value pairs for all the rows and adds them to the supplied map, and then closes the result
+ * set.
+ * @param destination the target map.
+ * @param M the map type.
+ * @return the map with all the row key/value pairs in the result set added to it.
+ */
+suspend fun <K,V,M: MutableMap<in K,in V>> Connection.ResultMap<K, V>.toMap(destination: M): M {
+  return iterate {
+    while (it.hasNext()) {
+      val element = it.next()
+      destination.put(element.first, element.second)
+    }
+    destination
+  }
 }
 
 suspend inline fun <T : Connection<*>?, R> T.use(block: (T) -> R): R {
